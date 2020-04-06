@@ -7,6 +7,9 @@
 /* load fonts to be used */
 int Open_Fonts(const char *font_dir);
 
+/* close all fonts opened */
+int Close_Fonts();
+
 TTF_Font *font_10;
 TTF_Font *font_12;
 TTF_Font *font_14;

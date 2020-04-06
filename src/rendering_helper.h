@@ -4,6 +4,12 @@
 #include <stdio.h>
 
 #include "SDL.h"
+#include "SDL_image.h"
+
+
+/* create texture from image file */
+SDL_Texture* get_image_texture(SDL_Renderer* renderer, const char *file);
+
 
 
 /* render copy with coordinates on display */

@@ -1,6 +1,16 @@
 #include "rendering_helper.h"
 
 
+/* create texture from image file */
+SDL_Texture* get_image_texture(SDL_Renderer* renderer, const char *file){
+  SDL_Surface* surface = IMG_Load(file); /* create surface */
+  SDL_Texture* texture = SDL_CreateTextureFromSurface( renderer, surface ); /* convert to texture */
+  SDL_FreeSurface(surface); /* free surface */
+  return texture;
+}
+
+
+
 /* render copy with coordinates on display */
 
 /* render texture with absolute coordinate on top left */

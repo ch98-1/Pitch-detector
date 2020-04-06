@@ -14,12 +14,15 @@
 #include "colors.h"
 #include "fonts.h"
 #include "states.h"
+#include "constants.h"
 
 /* includes for functions that does real work*/
 #include "select_audio_driver.h"
 #include "measure_frequency.h"
 #include "text_rendering.h"
 #include "rendering_helper.h"
+#include "user_interface.h"
+#include "credits.h"
 
 
 int main(int argc, char* argv[])
@@ -41,6 +44,9 @@ int main(int argc, char* argv[])
     SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI
   );
 
+  SDL_SetWindowMinimumSize(window, 640, 480);
+
+
   if (window == NULL) { /* check for success */
       printf("Could not create window: %s\n", SDL_GetError());
       exit(EXIT_FAILURE);
@@ -58,7 +64,7 @@ int main(int argc, char* argv[])
   }
 
 
-  char font_dir[2048];
+  char font_dir[DIR_LENGTH];
 
   /* get resources base path */
   char *data_path = SDL_GetBasePath();
@@ -72,6 +78,9 @@ int main(int argc, char* argv[])
   /* open fonts for text */
   Open_Fonts(font_dir);
 
+  /* set common colors being used */
+  set_colors();
+
   int displayfps = 1;
   SDL_Surface *fps_text_surface = NULL;
   SDL_Texture *fps_text_texture = NULL;
@@ -79,8 +88,7 @@ int main(int argc, char* argv[])
   Uint64 SDL_time_Hz = SDL_GetPerformanceFrequency();
 
   /* starting state */
-  int program_state = select_audio_driver;
-  int next_program_state = program_state;
+  int program_state = SELECT_AUDIO_DRIVER;
 
 
   SDL_Event e;
@@ -89,6 +97,7 @@ int main(int argc, char* argv[])
   Uint64 b = 0;
   double fps = 0;
   Uint64 curr = SDL_GetPerformanceCounter();
+  Uint64 last_t = SDL_GetPerformanceCounter();
 
   /* main event loop */
   while (!quit){
@@ -104,43 +113,60 @@ int main(int argc, char* argv[])
       if (e.type == SDL_MOUSEBUTTONDOWN){
           quit = 1;
       }*/
-
+      else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.y < UI_TOP_HEIGHT){
+        int display_w, display_h;
+        SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
+        printf("%i \n", e.button.x);
+        handle_top_mouseclick(&program_state, &updatescreen, e.button.x/((float)display_w) );
+      }
       else {
         switch (program_state) {
-            case select_audio_driver: select_audio_driver_events(&program_state, &next_program_state, &updatescreen, &e);
-                break;
-            case measure_frequency: measure_frequency_events(&program_state, &next_program_state, &updatescreen, &e);
-                break;
-            default:
-                break;
+          case MEASURE_FREQUENCY: measure_frequency_events(&program_state, &updatescreen, &e);
+              break;
+          case SELECT_AUDIO_DRIVER: select_audio_driver_events(&program_state, &updatescreen, &e);
+              break;
+          case SELECT_AUDIO_DEVICE:
+              break;
+          case CREDITS: credit_events(&program_state, &updatescreen, &e);
+              break;
+          default:
+              break;
         }
       }
 
     }
 
     switch (program_state) {
-        case select_audio_driver: select_audio_driver_process(&program_state, &next_program_state, &updatescreen);
-            break;
-        case measure_frequency: measure_frequency_process(&program_state, &next_program_state, &updatescreen);
-            break;
-        default:
-            break;
+      case MEASURE_FREQUENCY: measure_frequency_process(&program_state, &updatescreen);
+          break;
+      case SELECT_AUDIO_DRIVER: select_audio_driver_process(&program_state, &updatescreen);
+          break;
+      case SELECT_AUDIO_DEVICE:
+          break;
+      case CREDITS: credit_process(&program_state, &updatescreen);
+          break;
+      default:
+          break;
     }
 
 
 
     if (updatescreen){
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_SetRenderDrawColor(renderer, C_BG_Gray.r, C_BG_Gray.g, C_BG_Gray.b, C_BG_Gray.a);
       SDL_RenderClear(renderer);
 
 
       switch (program_state) {
-          case select_audio_driver: select_audio_driver_display(&program_state, &next_program_state, renderer);
-              break;
-          case measure_frequency: measure_frequency_display(&program_state, &next_program_state, renderer);
-              break;
-          default:
-              break;
+        case MEASURE_FREQUENCY: measure_frequency_display(&program_state, renderer);
+            break;
+        case SELECT_AUDIO_DRIVER: select_audio_driver_display(&program_state, renderer);
+            break;
+        case SELECT_AUDIO_DEVICE:
+            break;
+        case CREDITS: credit_display(&program_state, renderer, data_path);
+            break;
+        default:
+            break;
       }
 
       int display_w, display_h;
@@ -150,15 +176,20 @@ int main(int argc, char* argv[])
       if (displayfps) {
         char fps_text[50];
         sprintf(fps_text, "%6.1f fps", fps);
-        render_text_relative_tr(renderer, font_12, fps_text, C_Black, 1, 0);
+        render_text_relative_br(renderer, font_12, fps_text, C_Text_Gray, 1, 1);
       }
 
+      draw_top_ui(&program_state, renderer); /* draw the top UI */
 
       SDL_RenderPresent(renderer);
       updatescreen = 0;
     }
 
-    program_state = next_program_state; /* update to next program state */
+    /* add delay if loop is goint too fast */
+    if ( 0.001 > ((SDL_GetPerformanceCounter() - last_t)/(double)SDL_time_Hz)) {
+      SDL_Delay(1);
+    }
+    last_t = SDL_GetPerformanceCounter();
 
     /* calculate fps every 30 frames */
     b++;
@@ -168,8 +199,11 @@ int main(int argc, char* argv[])
     }
   }
 
+  /* clean up texture for credits */
+  credit_cleanup();
+
   /* close fonts for text */
-  TTF_CloseFont(font_12);
+  Close_Fonts();
 
   SDL_free(data_path);
 

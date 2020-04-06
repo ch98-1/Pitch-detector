@@ -41,3 +41,17 @@ int Open_Fonts(const char *font_dir){
 
   return 0;
 }
+
+/* close all fonts opened */
+int Close_Fonts(){
+  TTF_CloseFont(font_10);
+  TTF_CloseFont(font_12);
+  TTF_CloseFont(font_14);
+  TTF_CloseFont(font_18);
+  TTF_CloseFont(font_24);
+  TTF_CloseFont(font_30);
+  TTF_CloseFont(font_36);
+  TTF_CloseFont(font_48);
+  TTF_CloseFont(font_60);
+  return 0;
+}

@@ -2,7 +2,9 @@
 #define STATES_H
 
 /* states the program can be in */
-#define select_audio_driver 0
-#define measure_frequency 1
+#define MEASURE_FREQUENCY 0
+#define SELECT_AUDIO_DRIVER 1
+#define SELECT_AUDIO_DEVICE 2
+#define CREDITS 3
 
 #endif /* STATES_H */
