@@ -1,7 +1,8 @@
 #include "select_audio_driver.h"
 
 
-int select_audio_driver_events(int* program_state, int* updatescreen, SDL_Renderer* renderer, SDL_Event* e, audio_system* system){
+int select_audio_device_events(int* program_state, int* updatescreen, SDL_Renderer* renderer, SDL_Event* e, audio_system* system){
+
 
   if (e->type == SDL_MOUSEBUTTONDOWN /* if clicing on right column for audio io on-off switch */
       && e->button.x >= VOLUME_BAR_SPACING_X
@@ -36,7 +37,7 @@ int select_audio_driver_events(int* program_state, int* updatescreen, SDL_Render
   return  0;
 }
 
-int select_audio_driver_process(int* program_state, int* updatescreen, audio_system* system){
+int select_audio_device_process(int* program_state, int* updatescreen, audio_system* system){
   /*int i;
 
   for (i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
@@ -46,7 +47,7 @@ int select_audio_driver_process(int* program_state, int* updatescreen, audio_sys
   return  0;
 }
 
-int select_audio_driver_display(int* program_state, SDL_Renderer* renderer, audio_system* system){
+int select_audio_device_display(int* program_state, SDL_Renderer* renderer, audio_system* system){
   int display_w, display_h;
   SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
 

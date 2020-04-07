@@ -33,10 +33,10 @@ int set_colors(){
   C_Text_Gray.b = 180;
   C_Text_Gray.a = 255;
 
-  C_white.r = 255; /* White */
-  C_white.g = 255;
-  C_white.b = 255;
-  C_white.a = 255;
+  C_White.r = 255; /* White */
+  C_White.g = 255;
+  C_White.b = 255;
+  C_White.a = 255;
 
   return 0;
 }

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* other libraries */
 #include "kiss_fft.h"
@@ -17,12 +18,15 @@
 #include "constants.h"
 
 /* includes for functions that does real work*/
-#include "select_audio_driver.h"
 #include "measure_frequency.h"
+#include "select_audio_driver.h"
+#include "select_audio_device.h"
 #include "text_rendering.h"
 #include "rendering_helper.h"
 #include "user_interface.h"
 #include "credits.h"
+#include "audio_system.h"
+#include "audio_rendering.h"
 
 
 int main(int argc, char* argv[])
@@ -44,7 +48,7 @@ int main(int argc, char* argv[])
     SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI
   );
 
-  SDL_SetWindowMinimumSize(window, 640, 480);
+  SDL_SetWindowMinimumSize(window, WINDOW_MIN_W, WINDOW_MIN_H);
 
 
   if (window == NULL) { /* check for success */
@@ -63,16 +67,11 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
+  audio_system *system = init_audio();
 
   char font_dir[DIR_LENGTH];
 
-  /* get resources base path */
-  char *data_path = SDL_GetBasePath();
-  if (!data_path) {
-      data_path = SDL_strdup("./");
-  }
-
-  strcpy(font_dir, data_path);
+  strcpy(font_dir, system->data_path);
   strcat(font_dir, "DejaVuSans.ttf");
 
   /* open fonts for text */
@@ -82,8 +81,6 @@ int main(int argc, char* argv[])
   set_colors();
 
   int displayfps = 1;
-  SDL_Surface *fps_text_surface = NULL;
-  SDL_Texture *fps_text_texture = NULL;
 
   Uint64 SDL_time_Hz = SDL_GetPerformanceFrequency();
 
@@ -116,16 +113,15 @@ int main(int argc, char* argv[])
       else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.y < UI_TOP_HEIGHT){
         int display_w, display_h;
         SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
-        printf("%i \n", e.button.x);
         handle_top_mouseclick(&program_state, &updatescreen, e.button.x/((float)display_w) );
       }
       else {
         switch (program_state) {
-          case MEASURE_FREQUENCY: measure_frequency_events(&program_state, &updatescreen, &e);
+          case MEASURE_FREQUENCY: measure_frequency_events(&program_state, &updatescreen, renderer, &e, system);
               break;
-          case SELECT_AUDIO_DRIVER: select_audio_driver_events(&program_state, &updatescreen, &e);
+          case SELECT_AUDIO_DRIVER: select_audio_driver_events(&program_state, &updatescreen, renderer, &e, system);
               break;
-          case SELECT_AUDIO_DEVICE:
+          case SELECT_AUDIO_DEVICE: select_audio_device_events(&program_state, &updatescreen, renderer, &e, system);
               break;
           case CREDITS: credit_events(&program_state, &updatescreen, &e);
               break;
@@ -137,11 +133,11 @@ int main(int argc, char* argv[])
     }
 
     switch (program_state) {
-      case MEASURE_FREQUENCY: measure_frequency_process(&program_state, &updatescreen);
+      case MEASURE_FREQUENCY: measure_frequency_process(&program_state, &updatescreen, system);
           break;
-      case SELECT_AUDIO_DRIVER: select_audio_driver_process(&program_state, &updatescreen);
+      case SELECT_AUDIO_DRIVER: select_audio_driver_process(&program_state, &updatescreen, system);
           break;
-      case SELECT_AUDIO_DEVICE:
+      case SELECT_AUDIO_DEVICE: select_audio_device_process(&program_state, &updatescreen, system);
           break;
       case CREDITS: credit_process(&program_state, &updatescreen);
           break;
@@ -155,15 +151,14 @@ int main(int argc, char* argv[])
       SDL_SetRenderDrawColor(renderer, C_BG_Gray.r, C_BG_Gray.g, C_BG_Gray.b, C_BG_Gray.a);
       SDL_RenderClear(renderer);
 
-
       switch (program_state) {
-        case MEASURE_FREQUENCY: measure_frequency_display(&program_state, renderer);
+        case MEASURE_FREQUENCY: measure_frequency_display(&program_state, renderer, system);
             break;
-        case SELECT_AUDIO_DRIVER: select_audio_driver_display(&program_state, renderer);
+        case SELECT_AUDIO_DRIVER: select_audio_driver_display(&program_state, renderer, system);
             break;
-        case SELECT_AUDIO_DEVICE:
+        case SELECT_AUDIO_DEVICE: select_audio_device_display(&program_state, renderer, system);
             break;
-        case CREDITS: credit_display(&program_state, renderer, data_path);
+        case CREDITS: credit_display(&program_state, renderer, system);
             break;
         default:
             break;
@@ -199,13 +194,16 @@ int main(int argc, char* argv[])
     }
   }
 
+  clean_audio(system);
+
   /* clean up texture for credits */
   credit_cleanup();
 
+  /* clean up textures for audio renderings */
+  audio_rendering_cleanup();
+
   /* close fonts for text */
   Close_Fonts();
-
-  SDL_free(data_path);
 
   SDL_DestroyRenderer(renderer); /* destroy main renderer */
   SDL_DestroyWindow(window); /* destroy main window */

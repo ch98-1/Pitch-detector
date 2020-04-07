@@ -10,10 +10,10 @@ int credit_process(int* program_state, int* updatescreen){
   return  0;
 }
 
-int credit_display(int* program_state, SDL_Renderer* renderer, const char *data_path){
+int credit_display(int* program_state, SDL_Renderer* renderer, audio_system* system){
   if (!credits_texture){ /* load credit texture if empty */
     char credits_image_dir[DIR_LENGTH];
-    strcpy(credits_image_dir, data_path);
+    strcpy(credits_image_dir, system->data_path);
     strcat(credits_image_dir, "Credits.png");
     credits_texture = get_image_texture(renderer, credits_image_dir);
   }
@@ -22,7 +22,7 @@ int credit_display(int* program_state, SDL_Renderer* renderer, const char *data_
 }
 
 int credit_cleanup(){ /* clean up and free stuff used by credits screen */
-  if (credits_texture){
+  if (credits_texture != NULL){
     SDL_DestroyTexture(credits_texture);
   }
   return 0;

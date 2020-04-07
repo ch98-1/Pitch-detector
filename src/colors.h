@@ -18,6 +18,6 @@ SDL_Color C_UID_Gray; /* UI dark gray */
 
 SDL_Color C_Text_Gray; /* Text gray */
 
-SDL_Color C_white; /* White */
+SDL_Color C_White; /* White */
 
 #endif /* COLORS_H */
