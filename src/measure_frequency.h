@@ -15,6 +15,7 @@
 #include "audio_system.h"
 #include "text_rendering.h"
 #include "rendering_helper.h"
+#include "audio_rendering.h"
 
 
 int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer* renderer, SDL_Event* e, audio_system* system);

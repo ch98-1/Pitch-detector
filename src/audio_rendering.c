@@ -201,7 +201,94 @@ int render_volume_bar(SDL_Renderer* renderer, audio_system* system, int y){
   SDL_RenderDrawLine(renderer, vol_x_pos, vol_y_pos + VOLUME_BAR_SPACING_Y_LARGE/2 + VOLUME_BAR_HEIGHT + VOLUME_BAR_SPACING_Y*2 - 1, vol_x_pos, vol_y_pos + VOLUME_BAR_SPACING_Y_LARGE/2 + VOLUME_BAR_HEIGHT - VOLUME_BAR_SPACING_Y - 1); /* tick on input */
   render_text_absolute_c(renderer, font_10, "-60", C_Text_Gray, vol_x_pos, vol_y_pos); /* draw text */
 
+
+  SDL_SetRenderDrawColor(renderer, C_Text_Gray.r, C_Text_Gray.g, C_Text_Gray.b, C_Text_Gray.a); /* set new color for volume slider */
+  dstrect.x = VOLUME_BAR_SPACING_X * 2;
+  dstrect.y = VOLUME_SLIDER_HEIGHT - 1;
+  dstrect.w = display_w - VOLUME_BAR_SPACING_X*4;
+  dstrect.h = 2;
+  SDL_RenderFillRect(renderer, &dstrect); /* draw volume slider */
+
+  int i; /* draw ticks for volume slider */
+  for (i = 0; i <= 100; i += 5){
+    vol_x_pos = dstrect.x + (i/100.0) * dstrect.w; /* volume 0 */
+    SDL_RenderDrawLine(renderer, vol_x_pos, VOLUME_SLIDER_HEIGHT - VOLUME_BAR_SPACING_Y, vol_x_pos, VOLUME_SLIDER_HEIGHT + VOLUME_BAR_SPACING_Y); /* tick on input */
+  }
+  for (i = 0; i <= 100; i += 20){
+    vol_x_pos = dstrect.x + (i/100.0) * dstrect.w; /* volume 0 */
+    SDL_RenderDrawLine(renderer, vol_x_pos, VOLUME_SLIDER_HEIGHT - VOLUME_BAR_SPACING_Y*1.2, vol_x_pos, VOLUME_SLIDER_HEIGHT + VOLUME_BAR_SPACING_Y*1.2); /* tick on input */
+  }
+  for (i = 0; i <= 100; i += 50){
+    vol_x_pos = dstrect.x + (i/100.0) * dstrect.w; /* volume 0 */
+    SDL_RenderDrawLine(renderer, vol_x_pos, VOLUME_SLIDER_HEIGHT - VOLUME_BAR_SPACING_Y_LARGE/2, vol_x_pos, VOLUME_SLIDER_HEIGHT + VOLUME_BAR_SPACING_Y_LARGE/2); /* tick on input */
+  }
+  render_text_absolute_c(renderer, font_10, "-", C_Text_Gray, VOLUME_BAR_SPACING_X*1.2, VOLUME_SLIDER_HEIGHT); /* draw - and + */
+  render_text_absolute_c(renderer, font_10, "+", C_Text_Gray, display_w - VOLUME_BAR_SPACING_X*1.2, VOLUME_SLIDER_HEIGHT); /* draw - and + */
+
+  SDL_SetRenderDrawColor(renderer, C_White.r, C_White.g, C_White.b, C_White.a); /* set new color for volume slider maeking box */
+  dstrect.x = VOLUME_BAR_SPACING_X * 2 + system->output_vol*(display_w - VOLUME_BAR_SPACING_X*4) - VOLUME_SLIDER_MARKER_WIDTH / 2;
+  dstrect.y = VOLUME_SLIDER_HEIGHT - VOLUME_BAR_SPACING_Y_LARGE / 2;
+  dstrect.w = VOLUME_SLIDER_MARKER_WIDTH;
+  dstrect.h = VOLUME_BAR_SPACING_Y_LARGE;
+  SDL_RenderFillRect(renderer, &dstrect); /* draw volume slider */
+  SDL_SetRenderDrawColor(renderer, C_Text_Gray.r, C_Text_Gray.g, C_Text_Gray.b, C_Text_Gray.a); /* draw slider otline */
+  SDL_RenderDrawRect(renderer, &dstrect); /* draw volume slider */
+
+
   SDL_SetRenderDrawColor(renderer, or, og, ob, oa); /* restore old color */
+  return 0;
+}
+
+int handle_volume_bar_event(SDL_Renderer* renderer, SDL_Event* e, audio_system* system){
+  int display_w, display_h;
+  SDL_GetRendererOutputSize(renderer, &display_w, &display_h); /* get display w and h */
+  static int volume_drag;/* dragging volume bar */
+  if (e->type == SDL_MOUSEBUTTONDOWN /* if clicing on right column for audio io on-off switch */
+      && e->button.x >= VOLUME_BAR_SPACING_X
+      && e->button.x <= VOLUME_BAR_SPACING_X + VOLUME_BAR_HEIGHT * 2 + VOLUME_BAR_SPACING_Y){
+    if (e->button.y >= VOLUME_BAR_SPACING_Y_LARGE + UI_TOP_HEIGHT /* input on-off */
+        && e->button.y <= VOLUME_BAR_SPACING_Y_LARGE + UI_TOP_HEIGHT + VOLUME_BAR_HEIGHT * 2 + VOLUME_BAR_SPACING_Y){
+      if (system->input_on){
+        turn_off_audio_input(system);
+      }
+      else {
+        turn_on_audio_input(system);
+      }
+    }
+    else if(e->button.y >= VOLUME_BAR_SPACING_Y_LARGE + UI_TOP_HEIGHT + VOLUME_BAR_HEIGHT * 2 + VOLUME_BAR_SPACING_Y + VOLUME_BAR_SPACING_Y_LARGE/* output on-off */
+            && e->button.y <= VOLUME_BAR_SPACING_Y_LARGE + UI_TOP_HEIGHT + VOLUME_BAR_HEIGHT * 2 + VOLUME_BAR_SPACING_Y + VOLUME_BAR_SPACING_Y_LARGE + VOLUME_BAR_HEIGHT * 2 + VOLUME_BAR_SPACING_Y){
+      if (system->output_on){
+        turn_off_audio_output(system);
+      }
+      else {
+        turn_on_audio_output(system);
+      }
+    }
+  }
+  if (e->type == SDL_MOUSEBUTTONDOWN /* if clicking on volume bar */
+      && e->button.y >= VOLUME_SLIDER_HEIGHT - VOLUME_BAR_HEIGHT/2
+      && e->button.y <= VOLUME_SLIDER_HEIGHT + VOLUME_BAR_HEIGHT/2){
+    if (e->button.x >= system->output_vol*(display_w - VOLUME_BAR_SPACING_X*4) + VOLUME_BAR_SPACING_X * 2.0 - VOLUME_SLIDER_MARKER_WIDTH/1.5/* if within the volume bar */
+        && e->button.x <= system->output_vol*(display_w - VOLUME_BAR_SPACING_X*4) + VOLUME_BAR_SPACING_X * 2.0 + VOLUME_SLIDER_MARKER_WIDTH/1.5){
+      volume_drag = 1;
+    }
+    system->output_vol = clamp_value((e->button.x - VOLUME_BAR_SPACING_X * 2.0)/(display_w - VOLUME_BAR_SPACING_X*4));
+  }
+  if (e->type == SDL_MOUSEBUTTONUP){ /* if unclicking */
+    volume_drag = 0;
+  }
+  if (!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK || SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_MMASK || SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK)) {
+    volume_drag = 0;
+  }
+  if (e->type == SDL_MOUSEMOTION && volume_drag){ /* if dragging the volume bar */
+    if (e->button.y >= VOLUME_SLIDER_HEIGHT - VOLUME_BAR_HEIGHT /* if within the volume bar + a bit of margin */
+        && e->button.y <= VOLUME_SLIDER_HEIGHT + VOLUME_BAR_HEIGHT) {
+      system->output_vol = clamp_value((e->button.x - VOLUME_BAR_SPACING_X * 2.0)/(display_w - VOLUME_BAR_SPACING_X*4));
+    }
+    else {
+      volume_drag = 0;
+    }
+  }
   return 0;
 }
 

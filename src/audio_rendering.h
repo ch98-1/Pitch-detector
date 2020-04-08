@@ -30,6 +30,9 @@ volumes should be normalised with max at 1
 Will strech to full width of the window with some margins*/
 int render_volume_bar(SDL_Renderer* renderer, audio_system* system, int y);
 
+/* handle events for the volume bar */
+int handle_volume_bar_event(SDL_Renderer* renderer, SDL_Event* e, audio_system* system);
+
 int audio_rendering_cleanup();
 
 #endif /* AUDIO_RENDERING_H */

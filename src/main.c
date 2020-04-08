@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
     "Pitch Detector",                  /* window title */
     SDL_WINDOWPOS_UNDEFINED,           /* initial x position */
     SDL_WINDOWPOS_UNDEFINED,           /* initial y position */
-    640,                               /* width, in pixels */
-    480,                               /* height, in pixels */
+    WINDOW_DEF_W,                               /* width, in pixels */
+    WINDOW_DEF_H,                               /* height, in pixels */
     SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI
   );
 
@@ -131,6 +131,9 @@ int main(int argc, char* argv[])
       }
 
     }
+
+    /* do one step of the audio system */
+    step_audio(system);
 
     switch (program_state) {
       case MEASURE_FREQUENCY: measure_frequency_process(&program_state, &updatescreen, system);

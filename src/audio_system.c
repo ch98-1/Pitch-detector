@@ -27,6 +27,26 @@ audio_system* init_audio(){
   return system;
 }
 
+/* do one step of the audio system */
+int step_audio(audio_system* system){
+
+  return 0;
+}
+
+
+/* clamp value to 0 to 1 */
+float clamp_value(float in){
+  if (in < 0){
+    return 0;
+  }
+  else if (in > 1){
+    return 1;
+  }
+  else {
+    return in;
+  }
+}
+
 
 /* turn on and off audio input and output */
 int turn_on_audio_input(audio_system* system){

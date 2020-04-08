@@ -16,6 +16,10 @@ typedef struct {
 
   char *data_path;
 
+  int audio_driver_index;
+  int audio_input_index;
+  int audio_output_index;
+
   float in_l_vol; /* volumes to display on volume bar */
   float in_r_vol;
   float in_l_vol_max;
@@ -29,6 +33,17 @@ typedef struct {
 
 /* initialise audio system */
 audio_system* init_audio();
+
+/* functions to set audio device and drivers */
+int set_audio_driver(int index, audio_system* system);
+int set_input_audio_device(int index, audio_system* system);
+int set_output_audio_device(int index, audio_system* system);
+
+/* do one step of the audio system */
+int step_audio(audio_system* system);
+
+/* clamp value to 0 to 1 */
+float clamp_value(float in);
 
 /* turn on and off audio input and output */
 int turn_on_audio_input(audio_system* system);
