@@ -27,6 +27,9 @@
 #define MIDI_NUM_X 0.28
 #define NOTE_X 0.78
 
+#define CONTENT_HEIGHT 250 /* height for content */
+
+#define WANTED_AUDIO_BUFFER_SIZE 4096 /* wanted audio buffer size. must be powers of 2 */
 
 
 #endif /* CONSTANTS_H */

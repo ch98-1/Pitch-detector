@@ -6,6 +6,8 @@
 #include "kiss_fft.h"
 #include "SDL.h"
 
+#include "constants.h"
+
 
 /* struct for storing audio system data */
 typedef struct {
@@ -19,6 +21,18 @@ typedef struct {
   int audio_driver_index;
   int audio_input_index;
   int audio_output_index;
+
+  SDL_AudioStream *input_stream; /* audio stream for converting formats */
+  SDL_AudioStream *output_stream;
+
+  SDL_AudioDeviceID input_device; /* input and output audio device */
+  SDL_AudioDeviceID output_device;
+
+  SDL_AudioSpec wanted_audiospec;/* audio stream format used for processing */
+  SDL_AudioSpec input_audiospec;/* audio spec for input and output */
+  SDL_AudioSpec output_audiospec;
+  SDL_AudioSpec wav_audiospec;/* audio spec for wave file input */
+
 
   float in_l_vol; /* volumes to display on volume bar */
   float in_r_vol;
