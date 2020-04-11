@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
           break;
     }
 
-
+updatescreen = 1;
 
     if (updatescreen){
       SDL_SetRenderDrawColor(renderer, C_BG_Gray.r, C_BG_Gray.g, C_BG_Gray.b, C_BG_Gray.a);

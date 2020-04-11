@@ -29,7 +29,15 @@
 
 #define CONTENT_HEIGHT 250 /* height for content */
 
-#define WANTED_AUDIO_BUFFER_SIZE 4096 /* wanted audio buffer size. must be powers of 2 */
+#define WANTED_AUDIO_BUFFER_SIZE 2048 /* wanted audio buffer size. must be powers of 2 */
+
+#define AUDIO_PROSESSING_LENGTH 16384   /* numer of samples in each channel to process */
+
+#define PEAK_VALUE_LENGTH 3200 /* number of samples to find the peak from. 3200 = last 1/15 of a second */
+
+/* number of samples of peak values to store for calculating max values
+will depend on the speed at whicth the audio loop occurs so test and change as needed */
+#define MAX_VALUE_BUFFER_LENGTH 512
 
 
 #endif /* CONSTANTS_H */
