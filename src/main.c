@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
   Uint64 SDL_time_Hz = SDL_GetPerformanceFrequency();
 
   /* starting state */
-  int program_state = SELECT_AUDIO_DRIVER;
+  int program_state = SELECT_AUDIO_DEVICE;
 
 
   SDL_Event e;
@@ -93,8 +93,10 @@ int main(int argc, char* argv[])
   int updatescreen = 0;
   Uint64 b = 0;
   double fps = 0;
-  Uint64 curr = SDL_GetPerformanceCounter();
-  Uint64 last_t = SDL_GetPerformanceCounter();
+
+  Uint64 curr = SDL_GetPerformanceCounter(); /* time for fps display */
+  Uint64 last_t = SDL_GetPerformanceCounter(); /* time for minimum delay calculation */
+  Uint64 last_update_t = SDL_GetPerformanceCounter(); /* time for minimul framerate calculation */
 
   /* main event loop */
   while (!quit){
@@ -142,15 +144,20 @@ int main(int argc, char* argv[])
           break;
       case SELECT_AUDIO_DEVICE: select_audio_device_process(&program_state, &updatescreen, system);
           break;
-      case CREDITS: credit_process(&program_state, &updatescreen);
+      case CREDITS: credit_process(&program_state, &updatescreen, system);
           break;
       default:
           break;
     }
 
-updatescreen = 1;
+    /* attempt to keep minimum framerate */
+    if ( (1.0 / MIN_FRAMERATE) > ((SDL_GetPerformanceCounter() - last_update_t)/(double)SDL_time_Hz)){ /* force screen update if its been too long */
+      updatescreen = 1;
+    }
 
     if (updatescreen){
+      last_update_t = SDL_GetPerformanceCounter(); /* update last screen update time */
+
       SDL_SetRenderDrawColor(renderer, C_BG_Gray.r, C_BG_Gray.g, C_BG_Gray.b, C_BG_Gray.a);
       SDL_RenderClear(renderer);
 
@@ -184,12 +191,12 @@ updatescreen = 1;
     }
 
     /* add delay if loop is goint too fast */
-    if ( 0.001 > ((SDL_GetPerformanceCounter() - last_t)/(double)SDL_time_Hz)) {
-      SDL_Delay(1);
+    if ( MIN_LOOP_DELAY > ((SDL_GetPerformanceCounter() - last_t)/(double)SDL_time_Hz)) {
+      SDL_Delay(1000*MIN_LOOP_DELAY);
     }
     last_t = SDL_GetPerformanceCounter();
 
-    /* calculate fps every 30 frames */
+    /* calculate fps every 30 loops */
     b++;
     if (b%30 == 0){
       fps = 30/((double)((SDL_GetPerformanceCounter() - curr)/(double)SDL_time_Hz));

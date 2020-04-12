@@ -16,7 +16,7 @@ SDL_Texture* credits_texture;
 
 int credit_events(int* program_state, int* updatescreen, SDL_Event* e);
 
-int credit_process(int* program_state, int* updatescreen);
+int credit_process(int* program_state, int* updatescreen, audio_system* system);
 
 int credit_display(int* program_state, SDL_Renderer* renderer, audio_system* system);
 

@@ -12,6 +12,7 @@
 #include "audio_rendering.h"
 
 
+
 int select_audio_device_events(int* program_state, int* updatescreen, SDL_Renderer* renderer, SDL_Event* e, audio_system* system);
 
 int select_audio_device_process(int* program_state, int* updatescreen, audio_system* system);

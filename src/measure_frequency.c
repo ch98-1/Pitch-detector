@@ -12,7 +12,8 @@ int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer
 }
 
 int measure_frequency_process(int* program_state, int* updatescreen, audio_system* system){
-
+  system->play_tone_end = 0; /* not playing any tone */
+  
   return  0;
 }
 

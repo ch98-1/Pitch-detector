@@ -6,7 +6,9 @@ int credit_events(int* program_state, int* updatescreen, SDL_Event* e){
   return  0;
 }
 
-int credit_process(int* program_state, int* updatescreen){
+int credit_process(int* program_state, int* updatescreen, audio_system* system){
+  system->play_tone_end = 0; /* not playing any tone */
+
   return  0;
 }
 

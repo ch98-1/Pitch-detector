@@ -56,6 +56,12 @@ typedef struct {
   float out_l_vol_max;
   float out_r_vol_max;
 
+
+  Uint64 audio_playback_samples; /* numer of samples that have been played back */
+
+  Uint32 play_tone_end; /* time in SDL Tick to end playing the sine wave tone */
+  float play_tone_frequency; /* frequency to play the tone at */
+
 } audio_system;
 
 /* initialise audio system */
@@ -79,7 +85,10 @@ int interleave(float* left, float* right, float* data, Uint32 length);
 /* get peak value for the last <peak_length> number of value of the data */
 float get_peak(float* data, Uint32 data_length, Uint32 peak_length);
 
-/* load audio output for left and right channel */
+/* load audio output for left and right channel with length less than PEAK_VALUE_LENGTH */
+int load_output_section(float* left, float* right, Uint32 length, audio_system* system);
+
+/* safe version of load output that supports any length */
 int load_output(float* left, float* right, Uint32 length, audio_system* system);
 
 /* adjust the volume of first length samples of the data */
@@ -88,6 +97,9 @@ int adjust_volume(float* data, float volume, Uint32 length);
 /* shift the data and append the input to it */
 int shift_append_audio(float* data, float* input, Uint32 data_length, Uint32 input_length);
 
+
+/* do one step of audio playback */
+int audio_output_step(audio_system* system);
 
 /* clamp value to 0 to 1 */
 float clamp_value(float in);
@@ -98,6 +110,11 @@ int turn_off_audio_input(audio_system* system);
 
 int turn_on_audio_output(audio_system* system);
 int turn_off_audio_output(audio_system* system);
+
+/* clear audio input and output */
+int clear_audio_input(audio_system* system);
+int clear_audio_output(audio_system* system);
+
 
 /* clean audio system */
 int clean_audio(audio_system* system);

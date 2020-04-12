@@ -26,7 +26,7 @@ audio_system* init_audio(){
   SDL_memset(&(system->output_audiospec), 0, sizeof(system->output_audiospec));
   SDL_memset(&(system->wav_audiospec), 0, sizeof(system->wav_audiospec));
 
-  system->wanted_audiospec.freq = 48000; /* set wanted audio spec */
+  system->wanted_audiospec.freq = SAMPLE_RATE; /* set wanted audio spec */
   system->wanted_audiospec.format = AUDIO_F32SYS;
   system->wanted_audiospec.channels = 2;
   system->wanted_audiospec.samples = WANTED_AUDIO_BUFFER_SIZE;
@@ -43,30 +43,35 @@ audio_system* init_audio(){
   system->out_l_vol_max = 0;
   system->out_r_vol_max = 0.85;
 
-  set_audio_driver(0, system);
-  set_input_audio_device(0, system);
+  set_audio_driver(0, system); /* set the audio driver to first one */
+  set_input_audio_device(0, system); /* also set the audio device input and output to first one */
   set_output_audio_device(0, system);
 
-  turn_on_audio_input(system); /* turn inputs adn outpust on now that everything is set uo */
+  turn_on_audio_input(system); /* turn inputs and outpust on now that everything is set uo */
   turn_on_audio_output(system);
+
+  system->play_tone_end = 0; /* don't play any tone at start */
+  system->play_tone_frequency = 0;
 
   return system;
 }
 
-/* functions to set audio device and drivers */
+/* set audio device */
 int set_audio_driver(int index, audio_system* system){
   if (index < SDL_GetNumAudioDrivers()) {
     SDL_AudioQuit();
     if (SDL_AudioInit(SDL_GetAudioDriver(index))) { /* initialise audio driver and check for error */
-        SDL_Log("Audio driver failed to initialize: %s", SDL_GetError());
+      SDL_Log("Audio driver failed to initialize: %s", SDL_GetError());
     }
     SDL_Log("Audio driver is: %s", SDL_GetAudioDriver(index)); /* log for testing */
     system->audio_driver_index = index;
+
     return 0;
   }
   return 1;
 }
 
+/* set audio driver */
 int set_input_audio_device(int index, audio_system* system){
   if (index < SDL_GetNumAudioDevices(1)){
     if (system->input_device != 0) {
@@ -77,10 +82,13 @@ int set_input_audio_device(int index, audio_system* system){
     }
     system->input_device = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(index, 1), 1, &(system->wanted_audiospec), &(system->input_audiospec), SDL_AUDIO_ALLOW_ANY_CHANGE);/* open device */
     if (system->input_device == 0) { /* check for error */
-        SDL_Log("Failed to open input device: %s", SDL_GetError());
+      SDL_Log("Failed to open input device: %s", SDL_GetError());
     }
     SDL_Log("Audio input is: %s", SDL_GetAudioDeviceName(index, 1));  /* log for testing */
     system->input_stream = SDL_NewAudioStream(system->input_audiospec.format, system->input_audiospec.channels, system->input_audiospec.freq, system->wanted_audiospec.format, system->wanted_audiospec.channels, system->wanted_audiospec.freq);/* create new audio stream converter */
+    if (system->input_stream == NULL){ /* check for error */
+      SDL_Log("Failed to create input stream: %s", SDL_GetError());
+    }
     system->audio_input_index = index;
     if(system->input_on){ /* set the on/off state to the correct one */
       turn_on_audio_input(system);
@@ -93,6 +101,7 @@ int set_input_audio_device(int index, audio_system* system){
   return 1;
 }
 
+/* set audio driver */
 int set_output_audio_device(int index, audio_system* system){
   if (index < SDL_GetNumAudioDevices(0)){
     if (system->output_device != 0) {
@@ -103,10 +112,13 @@ int set_output_audio_device(int index, audio_system* system){
     }
     system->output_device = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(index, 0), 0, &(system->wanted_audiospec), &(system->output_audiospec), SDL_AUDIO_ALLOW_ANY_CHANGE);/* open device */
     if (system->output_device == 0) { /* check for error */
-        SDL_Log("Failed to open output device: %s", SDL_GetError());
+      SDL_Log("Failed to open output device: %s", SDL_GetError());
     }
     SDL_Log("Audio output is: %s", SDL_GetAudioDeviceName(index, 0));  /* log for testing */
     system->output_stream = SDL_NewAudioStream(system->wanted_audiospec.format, system->wanted_audiospec.channels, system->wanted_audiospec.freq, system->output_audiospec.format, system->output_audiospec.channels, system->output_audiospec.freq);/* create new audio stream converter */
+    if (system->output_stream == NULL){ /* check for error */
+      SDL_Log("Failed to create output stream: %s", SDL_GetError());
+    }
     system->audio_output_index = index;
     if(system->output_on){ /* set the on/off state to the correct one */
       turn_on_audio_output(system);
@@ -154,6 +166,8 @@ int step_audio(audio_system* system){
 
 
   if (system->output_on){ /* handle output */
+    audio_output_step(system); /* do one step of output */
+
     system->out_l_vol = get_peak(system->output_l, PEAK_VALUE_LENGTH, PEAK_VALUE_LENGTH); /* set output volume values */
     system->out_r_vol = get_peak(system->output_r, PEAK_VALUE_LENGTH, PEAK_VALUE_LENGTH);
     system->out_l_vol_max = system->out_l_vol; /* copy volumes for now */
@@ -206,22 +220,51 @@ float get_peak(float* data, Uint32 data_length, Uint32 peak_length){
       max = current; /* replace max if larger is found */
     }
   }
-  return max; /* return the peak value */
+  return clamp_value(max); /* return the peak value clamped to within 0 to 1 */
 }
 
-/* load audio output for left and right channel */
-int load_output(float* left, float* right, Uint32 length, audio_system* system){
+/* load audio output for left and right channel
+the length must be less than PEAK_VALUE_LENGTH to work */
+int load_output_section(float* left, float* right, Uint32 length, audio_system* system){
   Uint32 data_size = length*sizeof(float)*2; /* get length of total data in bytes */
-  void* data = malloc(data_size); /* allocate memory for data to be sent in to stream */
-  interleave(left, right, data, length); /* interleve the audio data */
-  adjust_volume(data, system->output_vol, length*2); /* adjust the output volume */
+  void* data = malloc(data_size); /* allocate memory for data to be sent in to stream  */
+
+  float* left_copy = malloc(length*sizeof(float)); /* allocate memory for copy of left and right channel data input */
+  float* right_copy = malloc(length*sizeof(float));
+
+  memcpy(left_copy, left, length*sizeof(float)); /* copy data */
+  memcpy(right_copy, right, length*sizeof(float));
+
+  adjust_volume(left_copy, system->output_vol, length); /* adjust the output volume for left and right */
+  adjust_volume(right_copy, system->output_vol, length); /* adjust the output volume for left and right */
+  interleave(left_copy, right_copy, data, length); /* interleve the audio data */
   SDL_AudioStreamPut(system->output_stream, data, data_size); /* put audio in to the system */
-  shift_append_audio(system->output_l, left, PEAK_VALUE_LENGTH, length);/* shift append data in to output peak calculator buffer */
-  shift_append_audio(system->output_r, right, PEAK_VALUE_LENGTH, length);
+  shift_append_audio(system->output_l, left_copy, PEAK_VALUE_LENGTH, length);/* shift append data in to output peak calculator buffer */
+  shift_append_audio(system->output_r, right_copy, PEAK_VALUE_LENGTH, length);
   if (data != NULL){ /* free allocated memory */
     free(data);
   }
+  if (left_copy != NULL){
+    free(left_copy);
+  }
+  if (right_copy != NULL){
+    free(right_copy);
+  }
   return 0;
+}
+
+/* safe version of load output that supports any length */
+int load_output(float* left, float* right, Uint32 length, audio_system* system){
+  if (length <= PEAK_VALUE_LENGTH){ /* if it can be loaded with single load output section */
+    load_output_section(left, right, length, system); /* call it as is */
+  }
+  else { /* if it can't*/
+  Uint32 i; /* split it up in to sections */
+    for(i = 0; i < length/(Uint32)PEAK_VALUE_LENGTH; i++){
+      load_output_section(left + i*(Uint32)PEAK_VALUE_LENGTH, right + i*(Uint32)PEAK_VALUE_LENGTH, PEAK_VALUE_LENGTH, system);
+    }
+    load_output_section(left + (length/(Uint32)PEAK_VALUE_LENGTH)*(Uint32)PEAK_VALUE_LENGTH, right + (length/(Uint32)PEAK_VALUE_LENGTH)*(Uint32)PEAK_VALUE_LENGTH, length - (length/(Uint32)PEAK_VALUE_LENGTH)*(Uint32)PEAK_VALUE_LENGTH, system); /* handle last little bit of data */
+  }
 }
 
 /* adjust the volume of first length samples of the data */
@@ -246,6 +289,36 @@ int shift_append_audio(float* data, float* input, Uint32 data_length, Uint32 inp
 }
 
 
+/* do one step of audio playback */
+int audio_output_step(audio_system* system){
+  if (SDL_GetQueuedAudioSize(system->output_device)/(sizeof(float)*2) < PLAYBACK_BUFFER_LENGTH){/* if more data is needed */
+
+    if (SDL_GetTicks() < system->play_tone_end ){ /* if supposed to be playing only a tone */
+      float data[PLAYBACK_BUFFER_LENGTH];
+      int i;
+      for( i = 0; i < PLAYBACK_BUFFER_LENGTH; i++){
+        data[i] = sin( (double)(system->audio_playback_samples + i) * system->play_tone_frequency * 3.14159 * 2 / (double)SAMPLE_RATE);
+      }
+      load_output(data, data, PLAYBACK_BUFFER_LENGTH, system); /* load output to be played */
+
+    }
+
+    else { /* if nothing should be playing */
+      float zeros[PLAYBACK_BUFFER_LENGTH]; /* generate zeros and clear output by playing that back */
+      int i;
+      for( i = 0; i < PLAYBACK_BUFFER_LENGTH; i++){
+        zeros[i] = 0;
+      }
+      load_output(zeros, zeros, PLAYBACK_BUFFER_LENGTH, system); /* load the zeros to clear output */
+    }
+
+    system->audio_playback_samples += PLAYBACK_BUFFER_LENGTH; /* shift time as required */
+  }
+  return 0;
+}
+
+
+
 /* clamp value to 0 to 1 */
 float clamp_value(float in){
   if (in < 0){
@@ -263,34 +336,43 @@ float clamp_value(float in){
 /* turn on and off audio input and output */
 int turn_on_audio_input(audio_system* system){
   SDL_PauseAudioDevice(system->input_device, 0);
-  SDL_ClearQueuedAudio(system->input_device); /* clear internal data for device ans stream */
-  SDL_AudioStreamClear(system->input_stream);
+  clear_audio_input(system); /* clear internal data for device ans stream */
   system->input_on = 1;
   return 0;
 }
 
 int turn_off_audio_input(audio_system* system){
   SDL_PauseAudioDevice(system->input_device, 1);
-  SDL_ClearQueuedAudio(system->input_device);/* clear internal data for device ans stream */
-  SDL_AudioStreamClear(system->input_stream);
+  clear_audio_input(system); /* clear internal data for device ans stream */
   system->input_on = 0;
   return 0;
 }
 
 int turn_on_audio_output(audio_system* system){
   SDL_PauseAudioDevice(system->output_device, 0);
-  SDL_ClearQueuedAudio(system->output_device);/* clear internal data for device ans stream */
-  SDL_AudioStreamClear(system->output_stream);
+  clear_audio_output(system); /* clear internal data for device ans stream */
   system->output_on = 1;
   return 0;
 }
 
 int turn_off_audio_output(audio_system* system){
   SDL_PauseAudioDevice(system->output_device, 1);
-  SDL_ClearQueuedAudio(system->output_device);/* clear internal data for device ans stream */
-  SDL_AudioStreamClear(system->output_stream);
+  clear_audio_output(system); /* clear internal data for device ans stream */
   system->output_on = 0;
   return 0;
+}
+
+/* clear audio input*/
+int clear_audio_input(audio_system* system){
+  SDL_ClearQueuedAudio(system->input_device);/* clear internal data for device ans stream */
+  SDL_AudioStreamClear(system->input_stream);
+}
+
+/* clear audio output */
+int clear_audio_output(audio_system* system){
+  SDL_ClearQueuedAudio(system->output_device);/* clear internal data for device ans stream */
+  SDL_AudioStreamClear(system->output_stream);
+  system->audio_playback_samples = 0;
 }
 
 

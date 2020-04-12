@@ -27,7 +27,11 @@
 #define MIDI_NUM_X 0.28
 #define NOTE_X 0.78
 
-#define CONTENT_HEIGHT 250 /* height for content */
+#define FREQUENCY_DISPLAY_CONTENT_HEIGHT 250 /* height for content when frequency is displayed */
+#define DRIVER_CONTENT_HEIGHT 140 /* height for content when in driver select screen */
+#define DEVICE_CONTENT_HEIGHT 120 /* height for content when in device select screen */
+
+#define SAMPLE_RATE 48000 /* sample rate for the audio processing */
 
 #define WANTED_AUDIO_BUFFER_SIZE 2048 /* wanted audio buffer size. must be powers of 2 */
 
@@ -35,9 +39,25 @@
 
 #define PEAK_VALUE_LENGTH 3200 /* number of samples to find the peak from. 3200 = last 1/15 of a second */
 
+#define PLAYBACK_BUFFER_LENGTH 2048 /* number of samples wanted in the playback buffer before loading more */
+
 /* number of samples of peak values to store for calculating max values
 will depend on the speed at whicth the audio loop occurs so test and change as needed */
 #define MAX_VALUE_BUFFER_LENGTH 512
 
+#define MIN_FRAMERATE 30.0 /* minimul framerate graphic tries to update at */
+
+#define MIN_LOOP_DELAY 0.001 /* minimul loop delay in seconds */
+
+#define DRIVER_BUTTON_WIDTH 210 /* width, height, and spacing for driver and device select buttons */
+#define DRIVER_BUTTON_HEIGHT 28
+#define DRIVER_BUTTON_HEIGHT_SPACING 8
+#define DEVICE_BUTTON_WIDTH 270
+#define DEVICE_BUTTON_HEIGHT 28
+#define DEVICE_BUTTON_HEIGHT_SPACING 4
+
+#define TEST_BUTTON_WIDTH 120 /* width, height, and position for test button */
+#define TEST_BUTTON_HEIGHT 28
+#define TEST_BUTTON_HEIGHT_SPACING 10 /* spacing from the bottom */
 
 #endif /* CONSTANTS_H */

@@ -30,22 +30,6 @@ int draw_top_ui(int* program_state, SDL_Renderer* renderer){
   }
 
   dstrect.x = 1.0/4.0*display_w; /* set rectangle position*/
-  if (*program_state == SELECT_AUDIO_DRIVER) {
-    SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
-    SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
-    SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
-    SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
-    render_text_absolute_c(renderer, font_18, "Driver", C_Text_Gray, dstrect.x + display_w/(4.0*2.0), dstrect.y + UI_TOP_HEIGHT / 2); /* draw text */
-  }
-  else {
-    SDL_SetRenderDrawColor(renderer, C_UI_Gray.r, C_UI_Gray.g, C_UI_Gray.b, C_UI_Gray.a); /* set new color */
-    SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
-    SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
-    SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
-    render_text_absolute_c(renderer, font_18, "Driver", C_Text_Gray, dstrect.x + display_w/(4.0*2.0), dstrect.y + UI_TOP_HEIGHT / 2); /* draw text */
-  }
-
-  dstrect.x = 2.0/4.0*display_w; /* set rectangle position*/
   if (*program_state == SELECT_AUDIO_DEVICE) {
     SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
     SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
@@ -59,6 +43,22 @@ int draw_top_ui(int* program_state, SDL_Renderer* renderer){
     SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
     SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
     render_text_absolute_c(renderer, font_18, "Device", C_Text_Gray, dstrect.x + display_w/(4.0*2.0), dstrect.y + UI_TOP_HEIGHT / 2); /* draw text */
+  }
+
+  dstrect.x = 2.0/4.0*display_w; /* set rectangle position*/
+  if (*program_state == SELECT_AUDIO_DRIVER) {
+    SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
+    SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
+    SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
+    SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
+    render_text_absolute_c(renderer, font_18, "Driver", C_Text_Gray, dstrect.x + display_w/(4.0*2.0), dstrect.y + UI_TOP_HEIGHT / 2); /* draw text */
+  }
+  else {
+    SDL_SetRenderDrawColor(renderer, C_UI_Gray.r, C_UI_Gray.g, C_UI_Gray.b, C_UI_Gray.a); /* set new color */
+    SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
+    SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
+    SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
+    render_text_absolute_c(renderer, font_18, "Driver", C_Text_Gray, dstrect.x + display_w/(4.0*2.0), dstrect.y + UI_TOP_HEIGHT / 2); /* draw text */
   }
 
   dstrect.x = 3.0/4.0*display_w; /* set rectangle position*/
@@ -86,10 +86,10 @@ int handle_top_mouseclick(int* program_state, int* updatescreen, float x){
     *program_state = MEASURE_FREQUENCY;
   }
   else if ( x < 2.0/4.0){
-    *program_state = SELECT_AUDIO_DRIVER;
+    *program_state = SELECT_AUDIO_DEVICE;
   }
   else if ( x < 3.0/4.0){
-    *program_state = SELECT_AUDIO_DEVICE;
+    *program_state = SELECT_AUDIO_DRIVER;
   }
   else{
     *program_state = CREDITS;
