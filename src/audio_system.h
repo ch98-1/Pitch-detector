@@ -8,6 +8,9 @@
 
 #include "constants.h"
 
+#include "convert_frequency.h"
+#include "calculate_frequency.h"
+
 
 /* audio is stored such that earliest time/oldest audio sample is at 0 and latest time/youngest audio sample is at the biggest address */
 
@@ -62,6 +65,11 @@ typedef struct {
   Uint32 play_tone_end; /* time in SDL Tick to end playing the sine wave tone */
   float play_tone_frequency; /* frequency to play the tone at */
 
+
+  float input_frequency; /* frequency from processing the latest input audio */
+  long int input_midi_note; /* rounded and clamped midi note for that frequency */
+  float input_midi_note_difference; /* total difference from the clamped midi note. how much higher or lower the real frequency is in midi note units */
+
 } audio_system;
 
 /* initialise audio system */
@@ -74,6 +82,10 @@ int set_output_audio_device(int index, audio_system* system);
 
 /* do one step of the audio system */
 int step_audio(audio_system* system);
+
+
+/* get the input's frequency and update the systems's internal representation for it */
+int get_input_frequency(audio_system* system);
 
 
 /* deinterleve the stereo audio in to 2 mono arrays */

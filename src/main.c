@@ -27,6 +27,8 @@
 #include "credits.h"
 #include "audio_system.h"
 #include "audio_rendering.h"
+#include "convert_frequency.h"
+#include "calculate_frequency.h"
 
 
 int main(int argc, char* argv[])
@@ -179,7 +181,7 @@ int main(int argc, char* argv[])
 
       /* fps display generation code */
       if (displayfps) {
-        char fps_text[50];
+        char fps_text[64];
         sprintf(fps_text, "%6.1f fps", fps);
         render_text_relative_br(renderer, font_12, fps_text, C_Text_Gray, 1, 1);
       }

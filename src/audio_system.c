@@ -53,6 +53,10 @@ audio_system* init_audio(){
   system->play_tone_end = 0; /* don't play any tone at start */
   system->play_tone_frequency = 0;
 
+  system->input_frequency = 0; /* initialise all input frequency stuff to 0 for now */
+  system->input_midi_note = 0;
+  system->input_midi_note_difference = 0;
+
   return system;
 }
 
@@ -186,6 +190,15 @@ int step_audio(audio_system* system){
     }
   }
   return 0;
+}
+
+
+/* get the input's frequency and update the systems's internal representation for it */
+int get_input_frequency(audio_system* system){
+
+  system->input_frequency = calculate_frequency(system->input_l, AUDIO_PROSESSING_LENGTH); /* get frequency */
+  system->input_midi_note = clamp_midi_english(f_to_midi_rounded(system->input_frequency)); /* get clamped midi note */
+  system->input_midi_note_difference = (double)system->input_midi_note - f_to_midi(system->input_frequency); /* calculate frequency difference in midi notes */
 }
 
 
