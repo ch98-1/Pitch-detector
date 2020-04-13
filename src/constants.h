@@ -41,6 +41,10 @@
 
 #define PLAYBACK_BUFFER_LENGTH 2048 /* number of samples wanted in the playback buffer before loading more */
 
+
+#define PLAY_NOTE_VOLUME 0.2 /* volume to play the tone at */
+
+
 /* number of samples of peak values to store for calculating max values
 will depend on the speed at whicth the audio loop occurs so test and change as needed */
 #define MAX_VALUE_BUFFER_LENGTH 512

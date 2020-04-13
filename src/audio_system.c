@@ -310,7 +310,7 @@ int audio_output_step(audio_system* system){
       float data[PLAYBACK_BUFFER_LENGTH];
       int i;
       for( i = 0; i < PLAYBACK_BUFFER_LENGTH; i++){
-        data[i] = sin( (double)(system->audio_playback_samples + i) * system->play_tone_frequency * 3.14159 * 2 / (double)SAMPLE_RATE);
+        data[i] = PLAY_NOTE_VOLUME*sin( (double)(system->audio_playback_samples + i) * system->play_tone_frequency * 3.14159 * 2 / (double)SAMPLE_RATE);
       }
       load_output(data, data, PLAYBACK_BUFFER_LENGTH, system); /* load output to be played */
 
