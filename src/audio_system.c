@@ -197,7 +197,7 @@ int step_audio(audio_system* system){
 
 /* get the input's frequency and update the systems's internal representation for it */
 int get_input_frequency(audio_system* system){
-  frequency_list frequencies = calculate_frequency(system->input_channel ? system->input_r : system->input_l, AUDIO_PROSESSING_LENGTH); /* get frequency for appropriate channel */
+  frequency_list frequencies = calculate_frequency(system->input_channel ? system->input_r : system->input_l, AUDIO_PROSESSING_LENGTH, SAMPLE_RATE); /* get frequency for appropriate channel */
   system->input_frequency_detected = frequencies.num; /* get number of frequencies detected */
   if (system->input_frequency_detected) {
     system->input_frequency = frequencies.frequency[0]; /* get frequency for appropriate channel */
@@ -209,6 +209,7 @@ int get_input_frequency(audio_system* system){
     system->input_midi_note = 0;
     system->input_midi_note_difference = 0;
   }
+  clean_frequency_list(frequencies); /* clean up after processing is finished */
   return 0;
 }
 
