@@ -41,9 +41,14 @@ frequency_list calculate_frequency(float* data, long int length, float sample_ra
 frequency_list calculate_frequency_fft(float* data, long int length, long int fft_length, float sample_rate){
   frequency_list frequencies; /* frequency list to return */
 
-  long int length_used = (fft_length % 2) ? fft_length - 1 : fft_length; /* calculate closest even number not exceeding the wanted fft length */
+  long int length_short = (fft_length % 2) ? fft_length - 1 : fft_length; /* calculate closest even number not exceeding the wanted fft length */
 
-  float* data_used = data + (length - length_used); /* do some memory math to come up with address for end part of data */
+  float* data_short = data + (length - length_short); /* do some memory math to come up with address for end part of data */
+
+  long int length_used = 32768;
+
+  float* data_used = calloc(length_used, sizeof(float)); /* create zero array */
+  memcpy(data_used + length_used - length_short, data_short, length_short); /* copy wanted data */
 
   kiss_fftr_cfg  fftr_cfg = kiss_fftr_alloc(length_used ,0 ,NULL ,NULL); /* initialise fft for 1d real  */
   kiss_fft_cpx* f_data = malloc(sizeof(kiss_fft_cpx) * (length_used/2 + 1)); /* allocate memory for frequency data */
@@ -76,6 +81,8 @@ frequency_list calculate_frequency_fft(float* data, long int length, long int ff
     free(fftr_cfg); /* free fft configs */
 
     free(f_data); /* free frequency data */
+
+    free(data_used); /* free copy of input data */
 
     return frequencies; /* return increasing frequency to test values */
 }
