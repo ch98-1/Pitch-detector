@@ -48,7 +48,7 @@ frequency_list calculate_frequency_fft(float* data, long int length, long int ff
   long int length_used = 32768;
 
   float* data_used = calloc(length_used, sizeof(float)); /* create zero array */
-  memcpy(data_used + length_used - length_short, data_short, length_short); /* copy wanted data */
+  memcpy(data_used, data_short, length_short); /* copy wanted data */
 
   kiss_fftr_cfg  fftr_cfg = kiss_fftr_alloc(length_used ,0 ,NULL ,NULL); /* initialise fft for 1d real  */
   kiss_fft_cpx* f_data = malloc(sizeof(kiss_fft_cpx) * (length_used/2 + 1)); /* allocate memory for frequency data */
