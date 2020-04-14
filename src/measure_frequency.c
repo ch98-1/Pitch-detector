@@ -16,7 +16,13 @@ int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer
 
 int measure_frequency_process(int* program_state, int* updatescreen, audio_system* system){
   system->play_tone_end = 0; /* not playing any tone */
-  get_input_frequency(system); /* do the input frequency calculation */
+
+  static unsigned long int i; /* static so it gets initialised to zero at first function call */
+  i++;
+  if(!(i%3)) { /* only sometimes do the input frequency calculation */
+    get_input_frequency(system); /* do the input frequency calculation */
+  }
+
   return  0;
 }
 
