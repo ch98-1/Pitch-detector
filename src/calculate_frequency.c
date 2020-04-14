@@ -74,9 +74,9 @@ frequency_list calculate_frequency_fft(float* data, long int length, long int ff
 
     frequencies.num = 1; /* fill data */
     frequencies.frequency = malloc(sizeof(float));
-    *(frequencies.frequency) = max_f;
+    frequencies.frequency[0] = max_f;
     frequencies.weight = malloc(sizeof(float));
-    *(frequencies.weight) = max_mag * max_mag / average;
+    frequencies.weight[0] = max_mag * max_mag / average;
 
     free(fftr_cfg); /* free fft configs */
 
