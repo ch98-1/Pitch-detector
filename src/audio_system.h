@@ -66,6 +66,8 @@ typedef struct {
   float play_tone_frequency; /* frequency to play the tone at */
 
 
+  int input_channel; /* input channel to measure the frequency from. 0 for left, 1 for right */
+
   float input_frequency; /* frequency from processing the latest input audio */
   long int input_midi_note; /* rounded and clamped midi note for that frequency */
   float input_midi_note_difference; /* total difference from the clamped midi note. how much higher or lower the real frequency is in midi note units */

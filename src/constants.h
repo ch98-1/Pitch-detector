@@ -53,6 +53,9 @@ will depend on the speed at whicth the audio loop occurs so test and change as n
 
 #define MIN_LOOP_DELAY 0.001 /* minimul loop delay in seconds */
 
+#define DRIVER_TEXT_LENGTH 16 /* max number of characters for driver name */
+#define DEVICE_TEXT_LENGTH 22 /* max number of characters for devicer name */
+
 #define DRIVER_BUTTON_WIDTH 210 /* width, height, and spacing for driver and device select buttons */
 #define DRIVER_BUTTON_HEIGHT 28
 #define DRIVER_BUTTON_HEIGHT_SPACING 8
@@ -63,5 +66,10 @@ will depend on the speed at whicth the audio loop occurs so test and change as n
 #define TEST_BUTTON_WIDTH 120 /* width, height, and position for test button */
 #define TEST_BUTTON_HEIGHT 28
 #define TEST_BUTTON_HEIGHT_SPACING 10 /* spacing from the bottom */
+
+#define CHANNEL_BUTTON_WIDTH 28 /* width and height of the channel switching button */
+#define CHANNEL_BUTTON_HEIGHT 28
+#define CHANNEL_BUTTON_TOP_SPACING 125 /* spacing from the left and top */
+#define CHANNEL_BUTTON_LEFT_SPACING 10
 
 #endif /* CONSTANTS_H */
