@@ -46,14 +46,21 @@ int measure_frequency_display(int* program_state, SDL_Renderer* renderer, audio_
   SDL_SetRenderDrawColor(renderer, or, og, ob, oa); /* restore old color */
 
 
+  if (system->input_frequency_detected) { /* if there is input frequency to display */
+    char frequency_text[64];
+    sprintf(frequency_text, "%5.2fHz", system->input_frequency); /* make the frequency text */
+    char midi_text[64];
+    sprintf(midi_text, "MIDI# %li", system->input_midi_note); /* make the midi note number text */
 
-  char frequency_text[64];
-  sprintf(frequency_text, "%5.2fHz", system->input_frequency); /* make the frequency text */
-  char midi_text[64];
-  sprintf(midi_text, "MIDI# %li", system->input_midi_note); /* make the midi note number text */
+    render_text_absolute_c(renderer, font_60, frequency_text, C_White, FREQUENCY_X*display_w, FREQUENCY_HEIGHT); /* draw current frequency */
+    render_text_absolute_c(renderer, font_60, midi_text, C_White, MIDI_NUM_X*display_w, FREQUENCY_HEIGHT_2); /* draw current note in midi number*/
+    render_text_absolute_c(renderer, font_60, get_note_name_english(system->input_midi_note), C_White, NOTE_X*display_w, FREQUENCY_HEIGHT_2); /* draw current note */
+  }
+  else {
+    render_text_absolute_c(renderer, font_60, "NFD", C_White, FREQUENCY_X*display_w, FREQUENCY_HEIGHT); /* draw current frequency */
+    render_text_absolute_c(renderer, font_60, "MIDI# NA", C_White, MIDI_NUM_X*display_w, FREQUENCY_HEIGHT_2); /* draw current note in midi number*/
+    render_text_absolute_c(renderer, font_60, "NA", C_White, NOTE_X*display_w, FREQUENCY_HEIGHT_2); /* draw current note */
+  }
 
-  render_text_absolute_c(renderer, font_60, frequency_text, C_White, FREQUENCY_X*display_w, FREQUENCY_HEIGHT); /* draw current frequency */
-  render_text_absolute_c(renderer, font_60, midi_text, C_White, MIDI_NUM_X*display_w, FREQUENCY_HEIGHT_2); /* draw current note in midi number*/
-  render_text_absolute_c(renderer, font_60, get_note_name_english(system->input_midi_note), C_White, NOTE_X*display_w, FREQUENCY_HEIGHT_2); /* draw current note */
   return 0;
 }
