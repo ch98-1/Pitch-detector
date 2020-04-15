@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0.2)
 
 # Basic project setup
 cmake_policy(SET CMP0048 NEW)
-project (PitchDetector VERSION 0.1.0)
+project (PitchDetector VERSION 0.1.1)
 
 
 # Find required libraries
