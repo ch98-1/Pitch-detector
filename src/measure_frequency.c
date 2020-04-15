@@ -4,7 +4,7 @@
 int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer* renderer, SDL_Event* e, audio_system* system){
   int display_w, display_h;
   SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
-  
+
   handle_volume_bar_event(renderer, e, system); /* take care of volume bar stuff */
 
   /* input frequency measurement channel select button */
@@ -23,6 +23,8 @@ int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer
 
 int measure_frequency_process(int* program_state, int* updatescreen, audio_system* system){
 
+  get_input_frequency(system); /* do the input frequency calculation */
+
   if (system->playback_content == 0){ /* if playing nothing */
     system->play_tone_end = 0; /* not playing any tone */
     system->input_monitor = 0; /* don't monitor input */
@@ -36,8 +38,6 @@ int measure_frequency_process(int* program_state, int* updatescreen, audio_syste
     system->play_tone_end = SDL_GetTicks() + (PLAYBACK_BUFFER_LENGTH * 1000.0)/SAMPLE_RATE;
     system->play_tone_frequency = midi_to_f(system->input_midi_note); /* play back input midi note */
   }
-
-  get_input_frequency(system); /* do the input frequency calculation */
 
   return  0;
 }
