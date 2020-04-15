@@ -53,6 +53,10 @@ audio_system* init_audio(){
   system->play_tone_end = 0; /* don't play any tone at start */
   system->play_tone_frequency = 0;
 
+  system->input_monitor = 0; /* don't monitor input by default */
+
+
+  system->playback_content = 0; /* don't playback anything by default */
 
   system->input_frequency_detected = 0; /* no input frequency */
   system->input_frequency = 0; /* initialise all input frequency stuff to 0 for now */
@@ -325,7 +329,10 @@ int audio_output_step(audio_system* system){
         data[i] = PLAY_NOTE_VOLUME*sin( (double)(system->audio_playback_samples + i) * system->play_tone_frequency * 3.14159 * 2 / (double)SAMPLE_RATE);
       }
       load_output(data, data, PLAYBACK_BUFFER_LENGTH, system); /* load output to be played */
+    }
 
+    else if (system->input_monitor) {
+      load_output(system->input_l + AUDIO_PROSESSING_LENGTH - system->last_input_len, system->input_r + AUDIO_PROSESSING_LENGTH - system->last_input_len, system->last_input_len, system); /* load last gotten input */
     }
 
     else { /* if nothing should be playing */

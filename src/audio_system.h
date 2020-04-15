@@ -65,6 +65,10 @@ typedef struct {
   Uint32 play_tone_end; /* time in SDL Tick to end playing the sine wave tone */
   float play_tone_frequency; /* frequency to play the tone at */
 
+  int input_monitor; /* monitor the input by directly outputting it */
+
+
+  int playback_content; /* what to play back. 0 for nothing, 1 for loop back, 2 for rounded to whole note */
 
   int input_channel; /* input channel to measure the frequency from. 0 for left, 1 for right */
 

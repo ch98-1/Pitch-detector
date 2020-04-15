@@ -40,7 +40,7 @@ int select_audio_device_events(int* program_state, int* updatescreen, SDL_Render
 }
 
 int select_audio_device_process(int* program_state, int* updatescreen, audio_system* system){
-
+  system->input_monitor = 0; /* don't monitor input */
   return  0;
 }
 

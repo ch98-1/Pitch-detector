@@ -27,7 +27,7 @@ int select_audio_driver_events(int* program_state, int* updatescreen, SDL_Render
 
 int select_audio_driver_process(int* program_state, int* updatescreen, audio_system* system){
     system->play_tone_end = 0; /* not playing any tone */
-
+    system->input_monitor = 0; /* don't monitor input */
   return  0;
 }
 

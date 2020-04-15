@@ -72,4 +72,9 @@ will depend on the speed at whicth the audio loop occurs so test and change as n
 #define CHANNEL_BUTTON_TOP_SPACING 125 /* spacing from the left and top */
 #define CHANNEL_BUTTON_LEFT_SPACING 10
 
+#define PLAYBACK_BUTTON_WIDTH 100 /* width and height of the channel switching button */
+#define PLAYBACK_BUTTON_HEIGHT 28
+#define PLAYBACK_BUTTON_TOP_SPACING 125 /* spacing from the right and top */
+#define PLAYBACK_BUTTON_RIGHT_SPACING 10
+
 #endif /* CONSTANTS_H */

@@ -2,12 +2,19 @@
 
 
 int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer* renderer, SDL_Event* e, audio_system* system){
-
+  int display_w, display_h;
+  SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
+  
   handle_volume_bar_event(renderer, e, system); /* take care of volume bar stuff */
 
   /* input frequency measurement channel select button */
-  if(e->type == SDL_MOUSEBUTTONDOWN && e->button.y > CHANNEL_BUTTON_TOP_SPACING && e->button.y < CHANNEL_BUTTON_TOP_SPACING + CHANNEL_BUTTON_HEIGHT && e->button.x > CHANNEL_BUTTON_LEFT_SPACING && e->button.x < CHANNEL_BUTTON_TOP_SPACING + CHANNEL_BUTTON_WIDTH){ /* if clicking  within the button */
+  if(e->type == SDL_MOUSEBUTTONDOWN && e->button.y > CHANNEL_BUTTON_TOP_SPACING && e->button.y < CHANNEL_BUTTON_TOP_SPACING + CHANNEL_BUTTON_HEIGHT && e->button.x > CHANNEL_BUTTON_LEFT_SPACING && e->button.x < CHANNEL_BUTTON_LEFT_SPACING + CHANNEL_BUTTON_WIDTH){ /* if clicking  within the button */
     system->input_channel = !system->input_channel;
+  }
+
+  /* output type select button */
+  if(e->type == SDL_MOUSEBUTTONDOWN && e->button.y > PLAYBACK_BUTTON_TOP_SPACING && e->button.y < PLAYBACK_BUTTON_TOP_SPACING + PLAYBACK_BUTTON_HEIGHT && e->button.x > display_w - PLAYBACK_BUTTON_WIDTH - PLAYBACK_BUTTON_RIGHT_SPACING && e->button.x < display_w - PLAYBACK_BUTTON_WIDTH - PLAYBACK_BUTTON_RIGHT_SPACING + PLAYBACK_BUTTON_WIDTH){ /* if clicking  within the button */
+    system->playback_content = (system->playback_content + 1) % 3; /* switch to next one */
   }
 
   *updatescreen = 1;
@@ -15,10 +22,23 @@ int measure_frequency_events(int* program_state, int* updatescreen, SDL_Renderer
 }
 
 int measure_frequency_process(int* program_state, int* updatescreen, audio_system* system){
-  system->play_tone_end = 0; /* not playing any tone */
+
+  if (system->playback_content == 0){ /* if playing nothing */
+    system->play_tone_end = 0; /* not playing any tone */
+    system->input_monitor = 0; /* don't monitor input */
+  }
+  else if (system->playback_content == 1){ /* if playing back input audio */
+    system->input_monitor = 1; /* monitor input */
+  }
+  else if (system->playback_content == 2 && system->input_frequency_detected && system->input_frequency > 40) { /* if playing the closest detected note and note is detected */
+    /* also check that the note is actually detected, and is of reasonably high frequency */
+    system->input_monitor = 0; /* don't monitor input */
+    system->play_tone_end = SDL_GetTicks() + (PLAYBACK_BUFFER_LENGTH * 1000.0)/SAMPLE_RATE;
+    system->play_tone_frequency = midi_to_f(system->input_midi_note); /* play back input midi note */
+  }
 
   get_input_frequency(system); /* do the input frequency calculation */
-  
+
   return  0;
 }
 
@@ -44,6 +64,27 @@ int measure_frequency_display(int* program_state, SDL_Renderer* renderer, audio_
   SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
   SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
   render_text_absolute_c(renderer, font_18, system->input_channel ? "R" : "L", C_Text_Gray, dstrect.x + CHANNEL_BUTTON_WIDTH / 2, dstrect.y + CHANNEL_BUTTON_HEIGHT / 2); /* draw text */
+
+  /* output type select button */
+  dstrect.w = PLAYBACK_BUTTON_WIDTH; /* set rectangle height */
+  dstrect.h = PLAYBACK_BUTTON_HEIGHT;
+  dstrect.x = display_w - PLAYBACK_BUTTON_WIDTH - PLAYBACK_BUTTON_RIGHT_SPACING; /* set rectangle position */
+  dstrect.y = PLAYBACK_BUTTON_TOP_SPACING;
+
+  SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
+  SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
+  SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
+  SDL_RenderDrawRect(renderer, &dstrect); /* draw background rectangle */
+
+  if (system->playback_content == 0){
+    render_text_absolute_c(renderer, font_18, "No Out", C_Text_Gray, dstrect.x + PLAYBACK_BUTTON_WIDTH / 2, dstrect.y + PLAYBACK_BUTTON_HEIGHT / 2); /* draw text */
+  }
+  else if (system->playback_content == 1){
+    render_text_absolute_c(renderer, font_18, "Monitor", C_Text_Gray, dstrect.x + PLAYBACK_BUTTON_WIDTH / 2, dstrect.y + PLAYBACK_BUTTON_HEIGHT / 2); /* draw text */
+  }
+  else if (system->playback_content == 2) {
+    render_text_absolute_c(renderer, font_18, "Note", C_Text_Gray, dstrect.x + PLAYBACK_BUTTON_WIDTH / 2, dstrect.y + PLAYBACK_BUTTON_HEIGHT / 2); /* draw text */
+  }
 
   SDL_SetRenderDrawColor(renderer, or, og, ob, oa); /* restore old color */
 
