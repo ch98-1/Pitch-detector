@@ -25,12 +25,21 @@ int select_audio_device_events(int* program_state, int* updatescreen, SDL_Render
       }
     }
 
+
     /* output test button */
     int x = display_w /2 - TEST_BUTTON_WIDTH / 2; /* x and y for testing the mouse click */
     int y = display_h - TEST_BUTTON_HEIGHT - TEST_BUTTON_HEIGHT_SPACING;
     if(e->button.y > y && e->button.y < y + TEST_BUTTON_HEIGHT && e->button.x > x && e->button.x < x + TEST_BUTTON_WIDTH){ /* if click is within the button */
-      system->play_tone_end = SDL_GetTicks() + 2000; /* play 2 second of 440Hz Tone */
-      system->play_tone_frequency = 440;
+
+      if (SDL_LockMutex(system->audio_system_mutex) == 0) { /* handle mutex for system */
+        system->play_tone_end = SDL_GetTicks() + 2000; /* play 2 second of 440Hz Tone */
+        system->play_tone_frequency = 440;
+        SDL_UnlockMutex(system->audio_system_mutex);
+      }
+      else { /* error message for when mutex breaks */
+        printf("Unable to lock mutex: %s\n", SDL_GetError());
+      }
+
     }
   }
 
@@ -40,7 +49,14 @@ int select_audio_device_events(int* program_state, int* updatescreen, SDL_Render
 }
 
 int select_audio_device_process(int* program_state, int* updatescreen, audio_system* system){
-  system->input_monitor = 0; /* don't monitor input */
+  if (SDL_LockMutex(system->audio_system_mutex) == 0) { /* handle mutex for system */
+    system->input_monitor = 0; /* don't monitor input */
+    system->measure_frequency_value = 0; /* don't measure frequency */
+    SDL_UnlockMutex(system->audio_system_mutex);
+  }
+  else { /* error message for when mutex breaks */
+    printf("Unable to lock mutex: %s\n", SDL_GetError());
+  }
   return  0;
 }
 
@@ -66,11 +82,25 @@ int select_audio_device_display(int* program_state, SDL_Renderer* renderer, audi
 
   render_text_absolute_c(renderer, font_18, "Input", C_Text_Gray, dstrect.x + DEVICE_BUTTON_WIDTH / 2, dstrect.y + DEVICE_BUTTON_HEIGHT / 2); /* draw text */
 
+
+  int audio_input_index;
+  int audio_output_index;
+
+  if (SDL_LockMutex(system->audio_system_mutex) == 0) { /* handle mutex for system */
+    audio_input_index = system->audio_input_index;
+    audio_output_index = system->audio_output_index;
+    SDL_UnlockMutex(system->audio_system_mutex);
+  }
+  else { /* error message for when mutex breaks */
+    printf("Unable to lock mutex: %s\n", SDL_GetError());
+  }
+
+
   int i;
   for (i = 0; i < SDL_GetNumAudioDevices(1); i++){
     dstrect.x = display_w / 4 - DEVICE_BUTTON_WIDTH / 2; /* set rectangle position */
     dstrect.y = DEVICE_CONTENT_HEIGHT + (i + 1) * (DEVICE_BUTTON_HEIGHT + DEVICE_BUTTON_HEIGHT_SPACING);
-    if (system->audio_input_index == i) {
+    if (audio_input_index == i) {
       SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
       SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
       SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */
@@ -98,7 +128,7 @@ int select_audio_device_display(int* program_state, SDL_Renderer* renderer, audi
   for (i = 0; i < SDL_GetNumAudioDevices(0); i++){
     dstrect.x = display_w * 3 / 4 - DEVICE_BUTTON_WIDTH / 2; /* set rectangle position */
     dstrect.y = DEVICE_CONTENT_HEIGHT + (i + 1) * (DEVICE_BUTTON_HEIGHT + DEVICE_BUTTON_HEIGHT_SPACING);
-    if (system->audio_output_index == i) {
+    if (audio_output_index == i) {
       SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
       SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
       SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */

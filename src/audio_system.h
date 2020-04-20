@@ -17,6 +17,8 @@
 
 /* struct for storing audio system data */
 typedef struct {
+  int quit; /* quiting or not */
+
   int input_on; /* on off state for audio io system */
   int output_on;
 
@@ -77,10 +79,29 @@ typedef struct {
   long int input_midi_note; /* rounded and clamped midi note for that frequency */
   float input_midi_note_difference; /* total difference from the clamped midi note. how much higher or lower the real frequency is in midi note units */
 
+
+  int measure_frequency_value; /* start frequency measurement */
+
+
+  SDL_mutex* audio_system_mutex; /* mutexes for various operations */
+  SDL_mutex* audio_input_mutex;
+  SDL_mutex* audio_output_mutex;
+  SDL_mutex* audio_frequency_mutex;
+  SDL_mutex* audio_volume_mutex;
+  SDL_mutex* system_quit_mutex;
+
 } audio_system;
 
 /* initialise audio system */
 audio_system* init_audio();
+
+
+/* audio loop for running in a different thread */
+extern int audio_loop(void *ptr);
+
+/* audio frequency detection loop for running in a different thread */
+extern int frequency_loop(void *ptr);
+
 
 /* functions to set audio device and drivers */
 int set_audio_driver(int index, audio_system* system);

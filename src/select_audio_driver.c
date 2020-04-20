@@ -26,8 +26,17 @@ int select_audio_driver_events(int* program_state, int* updatescreen, SDL_Render
 }
 
 int select_audio_driver_process(int* program_state, int* updatescreen, audio_system* system){
+
+  if (SDL_LockMutex(system->audio_system_mutex) == 0) { /* handle mutex for system */
     system->play_tone_end = 0; /* not playing any tone */
     system->input_monitor = 0; /* don't monitor input */
+    system->measure_frequency_value = 0; /* don't measure frequency */
+    SDL_UnlockMutex(system->audio_system_mutex);
+  }
+  else { /* error message for when mutex breaks */
+    printf("Unable to lock mutex: %s\n", SDL_GetError());
+  }
+
   return  0;
 }
 
@@ -47,11 +56,21 @@ int select_audio_driver_display(int* program_state, SDL_Renderer* renderer, audi
   dstrect.w = DRIVER_BUTTON_WIDTH; /* set rectangle height */
   dstrect.h = DRIVER_BUTTON_HEIGHT;
 
+  int audio_driver_index;
+
+  if (SDL_LockMutex(system->audio_system_mutex) == 0) { /* handle mutex for system */
+    audio_driver_index = system->audio_driver_index;
+    SDL_UnlockMutex(system->audio_system_mutex);
+  }
+  else { /* error message for when mutex breaks */
+    printf("Unable to lock mutex: %s\n", SDL_GetError());
+  }
+
   int i;
   for (i = 0; i < SDL_GetNumAudioDrivers(); i++){
     dstrect.x = display_w / 2 - DRIVER_BUTTON_WIDTH / 2; /* set rectangle position */
     dstrect.y = DRIVER_CONTENT_HEIGHT + i * (DRIVER_BUTTON_HEIGHT + DRIVER_BUTTON_HEIGHT_SPACING);
-    if (system->audio_driver_index == i) {
+    if (audio_driver_index == i) {
       SDL_SetRenderDrawColor(renderer, C_UIL_Gray.r, C_UIL_Gray.g, C_UIL_Gray.b, C_UIL_Gray.a); /* set new color */
       SDL_RenderFillRect(renderer, &dstrect); /* draw background rectangle */
       SDL_SetRenderDrawColor(renderer, C_UID_Gray.r, C_UID_Gray.g, C_UID_Gray.b, C_UID_Gray.a); /* set new color */

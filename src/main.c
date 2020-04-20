@@ -71,6 +71,13 @@ int main(int argc, char* argv[])
 
   audio_system *system = init_audio();
 
+  /* create thread for audio loop */
+  SDL_Thread* audio_loop_thread = SDL_CreateThread(audio_loop, "audio_loop", (void*)system);
+
+  /* create thread for frequency detection loop */
+  SDL_Thread* frequency_loop_thread = SDL_CreateThread(frequency_loop, "frequency_loop", (void*)system);
+
+
   char font_dir[DIR_LENGTH];
 
   strcpy(font_dir, system->data_path);
@@ -100,20 +107,28 @@ int main(int argc, char* argv[])
   Uint64 last_t = SDL_GetPerformanceCounter(); /* time for minimum delay calculation */
   Uint64 last_update_t = SDL_GetPerformanceCounter(); /* time for minimul framerate calculation */
 
+  if (SDL_LockMutex(system->system_quit_mutex) == 0) { /* handle mutex for quit */
+    quit = system->quit; /* set quit to audio system's quit */
+  SDL_UnlockMutex(system->system_quit_mutex);
+  }
+  else { /* error message for when mutex breaks */
+    printf("Unable to lock mutex: %s\n", SDL_GetError());
+  }
+
+
   /* main event loop */
   while (!quit){
     while (SDL_PollEvent(&e)){
       if (e.type == SDL_QUIT){
-          quit = 1;
+        if (SDL_LockMutex(system->system_quit_mutex) == 0) { /* handle mutex for quit */
+          system->quit = 1; /*  quit system */
+          SDL_UnlockMutex(system->system_quit_mutex);
+        }
+        else { /* error message for when mutex breaks */
+          printf("Unable to lock mutex: %s\n", SDL_GetError());
+        }
       }
 
-      /*if (e.type == SDL_KEYDOWN){
-          printf("fps=%lf\n", fps);
-          updatescreen = 1;
-      }
-      if (e.type == SDL_MOUSEBUTTONDOWN){
-          quit = 1;
-      }*/
       else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.y < UI_TOP_HEIGHT){
         int display_w, display_h;
         SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
@@ -136,8 +151,6 @@ int main(int argc, char* argv[])
 
     }
 
-    /* do one step of the audio system */
-    step_audio(system);
 
     switch (program_state) {
       case MEASURE_FREQUENCY: measure_frequency_process(&program_state, &updatescreen, system);
@@ -192,7 +205,7 @@ int main(int argc, char* argv[])
       updatescreen = 0;
     }
 
-    /* add delay if loop is goint too fast */
+    /* add delay if loop is going too fast */
     if ( MIN_LOOP_DELAY > ((SDL_GetPerformanceCounter() - last_t)/(double)SDL_time_Hz)) {
       SDL_Delay(1000*MIN_LOOP_DELAY);
     }
@@ -204,7 +217,24 @@ int main(int argc, char* argv[])
       fps = 30/((double)((SDL_GetPerformanceCounter() - curr)/(double)SDL_time_Hz));
       curr = SDL_GetPerformanceCounter();
     }
+
+    if (SDL_LockMutex(system->system_quit_mutex) == 0) { /* handle mutex for quit */
+      quit = system->quit; /* set quit to audio system's quit */
+    SDL_UnlockMutex(system->system_quit_mutex);
+    }
+    else { /* error message for when mutex breaks */
+      printf("Unable to lock mutex: %s\n", SDL_GetError());
+    }
+
   }
+
+  int audio_loop_thread_code; /* thread return values */
+  int frequency_loop_thread_code;
+
+  SDL_WaitThread(audio_loop_thread,  &audio_loop_thread_code);/* wait for audio loop to end */
+  SDL_WaitThread(frequency_loop_thread,  &frequency_loop_thread_code);/* wait for frequency detection loop to end */
+
+
 
   clean_audio(system);
 
