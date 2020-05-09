@@ -9,8 +9,8 @@ project (PitchDetector VERSION 0.1.1)
 # Find required libraries
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2>=2.0.7)
-pkg_check_modules(SDL2IMAGE REQUIRED sdl2_image>=2.0.1)
-pkg_check_modules(SDL2TTF REQUIRED sdl2_ttf>=2.0.12)
+pkg_check_modules(SDL2IMAGE REQUIRED SDL2_image>=2.0.1)
+pkg_check_modules(SDL2TTF REQUIRED SDL2_ttf>=2.0.12)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
