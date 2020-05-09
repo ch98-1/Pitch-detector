@@ -46,6 +46,16 @@ target_link_libraries (PitchDetector
   ${SDL2TTF_LINK_LIBRARIES}
   )
 
+# add math and threads library if its linux
+if (UNIX AND NOT APPLE)
+  find_package (Threads)
+  target_link_libraries (PitchDetector
+    m
+    threads
+    )
+endif ()
+
+
 
 # Set target properties for various platforms
 set_target_properties(PitchDetector PROPERTIES
