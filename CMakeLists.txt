@@ -47,10 +47,10 @@ target_link_libraries (PitchDetector
   )
 
 # add math and threads library if its linux
-if (UNIX AND NOT APPLE)
+if (UNIX)
   find_package (Threads)
   target_link_libraries (PitchDetector m ${CMAKE_THREAD_LIBS_INIT})
-endif ()
+endif (UNIX)
 
 
 
