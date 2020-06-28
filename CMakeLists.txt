@@ -62,21 +62,21 @@ if (PKGCONFIG_FOUND) # Switch build between PkgConfig vs find_package
 		${SDL2TTF_LINK_LIBRARIES}
 		)
 else(PKGCONFIG_FOUND) # if there is no PkgConfig
-# Create the executable
-include_directories (
-	"${PROJECT_SOURCE_DIR}/src"
-	"${PROJECT_SOURCE_DIR}/src/kissfft"
-	"${PROJECT_SOURCE_DIR}/src/kissfft/tools"
-	${SDL2_INCLUDE_DIR}
-	${SDL2IMAGE_INCLUDE_DIRS}
-	${SDL2TTF_INCLUDE_DIRS}
-	)
-add_executable (PitchDetector ${SourceFiles} ${ResourceFiles})
-target_link_libraries (PitchDetector
-	${SDL2_LINK_LIBRARY}
-	${SDL2IMAGE_LINK_LIBRARIES}
-	${SDL2TTF_LINK_LIBRARIES}
-	)
+	# Create the executable
+	include_directories (
+		"${PROJECT_SOURCE_DIR}/src"
+		"${PROJECT_SOURCE_DIR}/src/kissfft"
+		"${PROJECT_SOURCE_DIR}/src/kissfft/tools"
+		${SDL2_INCLUDE_DIR}
+		${SDL2_IMAGE_INCLUDE_DIRS}
+		${SDL2_TTF_INCLUDE_DIRS}
+		)
+	add_executable (PitchDetector ${SourceFiles} ${ResourceFiles})
+	target_link_libraries (PitchDetector
+		${SDL2_LIBRARY}
+		${SDL2_IMAGE_LIBRARIES}
+		${SDL2_TTF_LIBRARIES}
+		)
 endif(PKGCONFIG_FOUND)
 
 
