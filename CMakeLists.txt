@@ -15,9 +15,9 @@ if (PKGCONFIG_FOUND)
 	pkg_check_modules(SDL2IMAGE REQUIRED SDL2_image>=2.0.1)
 	pkg_check_modules(SDL2TTF REQUIRED SDL2_ttf>=2.0.12)
 else(PKGCONFIG_FOUND)
-	find_package(SDL2 2.0.7)
-	find_package(SDL2IMAGE 2.0.1)
-	find_package(SDL2TTF 2.0.12)
+	find_package(SDL2 REQUIRED)
+	find_package(SDL2IMAGE REQUIRED)
+	find_package(SDL2TTF REQUIRED)
 endif(PKGCONFIG_FOUND)
 
 
