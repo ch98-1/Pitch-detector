@@ -8,7 +8,7 @@ project (PitchDetector VERSION 0.1.1)
 
 # Find required libraries
 
-# find package using PkgConfig or find_package. 
+# find package using PkgConfig or find_package.
 # find_package script in Cmake directory provided by https://github.com/tcbrindle/sdl2-cmake-scripts
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PkgConfig)
@@ -44,20 +44,42 @@ endif()
 
 
 # Create the executable
+
+if (PKGCONFIG_FOUND) # Switch build between PkgConfig vs find_package
+	# Create the executable
+	include_directories (
+		"${PROJECT_SOURCE_DIR}/src"
+		"${PROJECT_SOURCE_DIR}/src/kissfft"
+		"${PROJECT_SOURCE_DIR}/src/kissfft/tools"
+		${SDL2_INCLUDE_DIRS}
+		${SDL2IMAGE_INCLUDE_DIRS}
+		${SDL2TTF_INCLUDE_DIRS}
+		)
+	add_executable (PitchDetector ${SourceFiles} ${ResourceFiles})
+	target_link_libraries (PitchDetector
+		${SDL2_LINK_LIBRARIES}
+		${SDL2IMAGE_LINK_LIBRARIES}
+		${SDL2TTF_LINK_LIBRARIES}
+		)
+else(PKGCONFIG_FOUND) # if there is no PkgConfig
+# Create the executable
 include_directories (
-  "${PROJECT_SOURCE_DIR}/src"
-  "${PROJECT_SOURCE_DIR}/src/kissfft"
-  "${PROJECT_SOURCE_DIR}/src/kissfft/tools"
-  ${SDL2_INCLUDE_DIRS}
-  ${SDL2IMAGE_INCLUDE_DIRS}
-  ${SDL2TTF_INCLUDE_DIRS}
-  )
+	"${PROJECT_SOURCE_DIR}/src"
+	"${PROJECT_SOURCE_DIR}/src/kissfft"
+	"${PROJECT_SOURCE_DIR}/src/kissfft/tools"
+	${SDL2_INCLUDE_DIR}
+	${SDL2IMAGE_INCLUDE_DIR}
+	${SDL2TTF_INCLUDE_DIR}
+	)
 add_executable (PitchDetector ${SourceFiles} ${ResourceFiles})
 target_link_libraries (PitchDetector
-  ${SDL2_LINK_LIBRARIES}
-  ${SDL2IMAGE_LINK_LIBRARIES}
-  ${SDL2TTF_LINK_LIBRARIES}
-  )
+	${SDL2_LINK_LIBRARY}
+	${SDL2IMAGE_LINK_LIBRARY}
+	${SDL2TTF_LINK_LIBRARY}
+	)
+endif(PKGCONFIG_FOUND)
+
+
 
 # add math and threads library if its linux
 if (UNIX)
