@@ -68,14 +68,14 @@ include_directories (
 	"${PROJECT_SOURCE_DIR}/src/kissfft"
 	"${PROJECT_SOURCE_DIR}/src/kissfft/tools"
 	${SDL2_INCLUDE_DIR}
-	${SDL2IMAGE_INCLUDE_DIR}
-	${SDL2TTF_INCLUDE_DIR}
+	${SDL2IMAGE_INCLUDE_DIRS}
+	${SDL2TTF_INCLUDE_DIRS}
 	)
 add_executable (PitchDetector ${SourceFiles} ${ResourceFiles})
 target_link_libraries (PitchDetector
 	${SDL2_LINK_LIBRARY}
-	${SDL2IMAGE_LINK_LIBRARY}
-	${SDL2TTF_LINK_LIBRARY}
+	${SDL2IMAGE_LINK_LIBRARIES}
+	${SDL2TTF_LINK_LIBRARIES}
 	)
 endif(PKGCONFIG_FOUND)
 
