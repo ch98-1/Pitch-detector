@@ -14,10 +14,11 @@ if (PKGCONFIG_FOUND)
 	pkg_check_modules(SDL2 REQUIRED sdl2>=2.0.7)
 	pkg_check_modules(SDL2IMAGE REQUIRED SDL2_image>=2.0.1)
 	pkg_check_modules(SDL2TTF REQUIRED SDL2_ttf>=2.0.12)
-else(PKGCONFIG_FOUND)
-	find_package(SDL2 REQUIRED)
-	find_package(SDL2IMAGE REQUIRED)
-	find_package(SDL2TTF REQUIRED)
+else(PKGCONFIG_FOUND) # if there is no PkgConfig
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${project_SOURCE_DIR}/cmake")
+	find_package(SDL2 2.0.7 REQUIRED)
+	find_package(SDL2IMAGE 2.0.1 REQUIRED)
+	find_package(SDL2TTF 2.0.12 REQUIRED)
 endif(PKGCONFIG_FOUND)
 
 
