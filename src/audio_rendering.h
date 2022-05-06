@@ -16,9 +16,9 @@
 #include "rendering_helper.h"
 #include "text_rendering.h"
 
-SDL_Texture* volume_bar_texture;
-SDL_Texture* input_icon_texture;
-SDL_Texture* output_icon_texture;
+extern SDL_Texture* volume_bar_texture;
+extern SDL_Texture* input_icon_texture;
+extern SDL_Texture* output_icon_texture;
 
 float get_db_limited(float volume);/* get db with lower limit */
 

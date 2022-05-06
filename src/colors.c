@@ -1,5 +1,20 @@
 #include "colors.h"
 
+/* common colors */
+SDL_Color C_Black; /* Black */
+
+SDL_Color C_BG_Gray; /* Background gray */
+
+SDL_Color C_UIL_Gray; /* UI light gray */
+
+SDL_Color C_UI_Gray; /* UI gray */
+
+SDL_Color C_UID_Gray; /* UI dark gray */
+
+SDL_Color C_Text_Gray; /* Text gray */
+
+SDL_Color C_White; /* White */
+
 int set_colors(){
   /* set common colors */
 

@@ -12,7 +12,7 @@
 #include "rendering_helper.h"
 #include "audio_system.h"
 
-SDL_Texture* credits_texture;
+extern SDL_Texture* credits_texture;
 
 int credit_events(int* program_state, int* updatescreen, SDL_Event* e);
 

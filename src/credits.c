@@ -1,5 +1,6 @@
 #include "credits.h"
 
+SDL_Texture* credits_texture;
 
 int credit_events(int* program_state, int* updatescreen, SDL_Event* e){
   *updatescreen = 1;
@@ -17,7 +18,7 @@ int credit_process(int* program_state, int* updatescreen, audio_system* system){
   else { /* error message for when mutex breaks */
     printf("Unable to lock mutex: %s\n", SDL_GetError());
   }
-  
+
   return  0;
 }
 
